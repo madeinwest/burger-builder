@@ -7,6 +7,7 @@ import Input from '../../../components/UI/Input/Input';
 import {connect} from 'react-redux'
 import withErrorHandler from '../../../hoc/withErrorHandler/withErrorHandler'
 import * as actions from '../../../store/actions/index.js'
+import {updateObject, checkValidity} from '../../../shared/utility'
 
 class ContactData extends Component {
   state = {
@@ -108,35 +109,19 @@ class ContactData extends Component {
 		this.props.onOrderBurger(order, this.props.token)
 	};
 	inputChangedHandler = (e ,inputID) => {
-		const updatedOrderForm = {
-			...this.state.orderForm
-		}
-		const updatedFormElemnt = {
-			...updatedOrderForm[inputID]
-		}
-		updatedFormElemnt.value = e.target.value;
-		updatedFormElemnt.valid = this.checkValidity(updatedFormElemnt.value, updatedFormElemnt.validation);
-		updatedFormElemnt.touched = true;
-		updatedOrderForm[inputID] = updatedFormElemnt;
+		const updatedFormElemnt = updateObject(this.state.orderForm[inputID], {
+			value:e.target.value,
+			valid:checkValidity(e.target.value, this.state.orderForm[inputID].validation),
+			touched: true
+		})
+		const updatedOrderForm = updateObject(this.state.orderForm, {
+			[inputID]:updatedFormElemnt
+		})
 		let formIsValid = true;
 		for(let inputID in updatedOrderForm) {
 			formIsValid = updatedOrderForm[inputID].valid && formIsValid
 		}
-		console.log(formIsValid)
 		this.setState({orderForm: updatedOrderForm, formIsValid: formIsValid})
-	}
-	checkValidity(value, rules) {
-		let isValid = true;
-		if(rules.required){
-			isValid = value.trim() !== '' && isValid
-		}
-		if(rules.minLength){
-			isValid = value.length >= rules.minLength && isValid
-		}
-		if(rules.maxLength){
-			isValid = value.length <= rules.maxLength && isValid
-		}
-		return isValid
 	}
   render() {
 		const formElementsArray = [];
